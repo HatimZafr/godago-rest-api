@@ -64,8 +64,9 @@ func main() {
 	docs.SwaggerInfo.Title = "Godago REST API"
 	docs.SwaggerInfo.Description = "A simple REST API built with Gin, MySQL, and OpenAPI"
 	docs.SwaggerInfo.Version = "1.0.0"
-	docs.SwaggerInfo.Host = bindAddress
+	docs.SwaggerInfo.Host = ""
 	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
