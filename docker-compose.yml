@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: godago_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-golang}
+      MYSQL_USER: ${DB_USER:-gouser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-devpassword}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: godago_api
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      DATABASE_URL: "${DB_USER:-gouser}:${DB_PASSWORD:-devpassword}@tcp(db:3306)/${DB_NAME:-golang}?charset=utf8mb4&parseTime=True&loc=Local"
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      GIN_MODE: "debug"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
